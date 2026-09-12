@@ -2,19 +2,18 @@
 using static Sistema_de_Biblioteca.Biblioteca;
 
 Console.WriteLine("\n--BIBLIOTECA - SISTEMA DE EMPRÉSTIMOS--\n");
-Console.WriteLine("");
 
-var biblioteca = new Biblioteca();
-var usuario = new Biblioteca.Usuario();
-var emprestimo = new Biblioteca.Emprestimo();
+var usuario = new Usuario();
+var emprestimo = new Emprestimo();
 
-Console.WriteLine($"Digite o nome do usuário: ");
-usuario.Nome = Console.ReadLine();
+Console.Write("Digite o nome do usuário: ");
+usuario.Nome = Console.ReadLine() ?? string.Empty;
 
 Console.WriteLine($"\nBem-vindo(a), {usuario.Nome}!");
 
-Console.WriteLine("\nQual seu tipo de Conta [Ouro, Prata, Bronze]?\n");
-usuario.Tipo = Console.ReadLine();
+Console.WriteLine("\nQual o seu tipo de Conta [Ouro, Prata, Bronze]?");
+usuario.Tipo = Console.ReadLine() ?? string.Empty;
+
 if (usuario.Tipo.Equals("Ouro", StringComparison.OrdinalIgnoreCase))
 {
     Console.WriteLine("Você tem direito a 15% de desconto no valor do empréstimo.");
@@ -32,19 +31,36 @@ else
     Console.WriteLine("Tipo de conta inválido. Você não terá desconto no valor do empréstimo.");
 }
 
-Console.WriteLine("Digite qual dos 3 livros que deseja pegar emprestado (O Senhor dos Anéis, O Pequeno Príncipe, Dom Casmurro): ");
-var livroEscolhido = Console.ReadLine();
-emprestimo.Livro = new Biblioteca.Livro { Titulo = livroEscolhido };
+Console.WriteLine("\nEscolha o livro desejado:");
+Console.WriteLine("1 - O Senhor dos Anéis (R$ 10,00/dia)");
+Console.WriteLine("2 - O Pequeno Príncipe (R$ 5,00/dia)");
+Console.WriteLine("3 - Dom Casmurro (R$ 7,50/dia)");
+Console.Write("Digite o nome do livro: ");
+var livroEscolhido = Console.ReadLine() ?? string.Empty;
 
-// ligando o empréstimo ao usuário (útil se Relatorio() usa dados do usuário)
+// Atribuindo preços de diária fictícios baseados na escolha para o cálculo funcionar
+double precoDiaria = livroEscolhido.ToLower() switch
+{
+    "o senhor dos anéis" => 10.0,
+    "o pequeno príncipe" => 5.0,
+    "dom casmurro" => 7.5,
+    _ => 5.0 // Valor padrão caso digite algo diferente
+};
+
+emprestimo.Livro = new Livro
+{
+    Titulo = livroEscolhido,
+    PrecoDiaria = precoDiaria
+};
+
 emprestimo.usuario = usuario;
 
-Console.WriteLine("Quando você pretende pegar o livro emprestado? (formato: dd/MM/yyyy): ");
-emprestimo.DataEmprestimo = DateTime.Parse(Console.ReadLine());
+Console.Write("\nQuando você pretende pegar o livro emprestado? (formato: dd/MM/yyyy): ");
+emprestimo.DataEmprestimo = DateTime.Parse(Console.ReadLine() ?? DateTime.Now.ToString());
 
-Console.WriteLine("Em quantos dias você pretende devolver o livro? ");
-var diasEmprestimo = int.Parse(Console.ReadLine());
+Console.Write("Em quantos dias você pretende devolver o livro? ");
+var diasEmprestimo = int.Parse(Console.ReadLine() ?? "1");
 emprestimo.DataDevolucao = emprestimo.DataEmprestimo.AddDays(diasEmprestimo);
 
-Console.WriteLine("\n----Aqui está o relatório do seu empréstimo: ---\n");
-Console.WriteLine($"{emprestimo.Relatorio()}");
+Console.WriteLine("\n---- Aqui está o relatório do seu empréstimo ----\n");
+Console.WriteLine(emprestimo.Relatorio());

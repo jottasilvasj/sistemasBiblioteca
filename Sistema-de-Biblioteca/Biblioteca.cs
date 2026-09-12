@@ -1,7 +1,4 @@
-﻿using System;
-using System.Security.Cryptography.X509Certificates;
-
-namespace Sistema_de_Biblioteca
+﻿namespace Sistema_de_Biblioteca
 {
     class Biblioteca
     {
@@ -36,39 +33,18 @@ namespace Sistema_de_Biblioteca
             public string Email { get; set; } = string.Empty;
             public string Telefone { get; set; } = string.Empty;
             public string Tipo { get; set; } = string.Empty;
-            public double DescontoMembro { get; set; }
-
-            public int TipagemUsuario()
-            {
-                if (Tipo == "Bronze")
-                {
-                    return 1;
-                }
-                else if (Tipo == "Prata")
-                {
-                    return 2;
-                }
-                else if (Tipo == "Ouro")
-                {
-                    return 3;
-                }
-                else
-                {
-                    return 4;
-                }
-            }
 
             public double CalcularDesconto()
             {
-               if (Tipo == "Bronze")
+                if (Tipo.Equals("Bronze", StringComparison.OrdinalIgnoreCase))
                 {
                     return 0.00;
                 }
-                else if (Tipo == "Prata")
+                else if (Tipo.Equals("Prata", StringComparison.OrdinalIgnoreCase))
                 {
-                    return 0.10;
+                    return 0.05; // Ajustado para 5% para bater com a interface
                 }
-                else if (Tipo == "Ouro")
+                else if (Tipo.Equals("Ouro", StringComparison.OrdinalIgnoreCase))
                 {
                     return 0.15;
                 }
@@ -77,7 +53,6 @@ namespace Sistema_de_Biblioteca
                     return 0.00;
                 }
             }
-
         }
 
         public class Emprestimo
@@ -87,27 +62,17 @@ namespace Sistema_de_Biblioteca
             public DateTime DataEmprestimo { get; set; }
             public DateTime DataDevolucao { get; set; }
 
-            public string livros()
+            public int CalcularDiasEmprestimo()
             {
-                var titulo = Livro?.Titulo ?? string.Empty;
-                return titulo switch
-                {
-                    "O Senhor dos Anéis" => "O Senhor dos Anéis",
-                    "Harry Potter" => "Harry Potter",
-                    "O Hobbit" => "O Hobbit",
-                    _ => "Livro não encontrado."
-                };
+                TimeSpan diferencaData = DataDevolucao - DataEmprestimo;
+                return diferencaData.Days;
             }
 
-            public double ValorLivros()
+            public double CalcularValorBruto()
             {
-                return livros() switch
-                {
-                    "O Senhor dos Anéis" => 50.0,
-                    "Harry Potter" => 75.0,
-                    "O Hobbit" => 60.0,
-                    _ => 0.0
-                };
+                // Agora o valor calcula baseado na diária e nos dias de empréstimo
+                int dias = CalcularDiasEmprestimo();
+                return Livro.CalcularCustoEmprestimo(dias > 0 ? dias : 1);
             }
 
             public double AplicarDesconto(double valor)
@@ -115,15 +80,9 @@ namespace Sistema_de_Biblioteca
                 return valor - (valor * usuario.CalcularDesconto());
             }
 
-            public int CalcularDiasEmprestimo()
-            {
-                TimeSpan diferençaData = DataDevolucao - DataEmprestimo;
-                return diferençaData.Days;
-            }
-
             public double CalcularValorFinal()
             {
-                return AplicarDesconto(ValorLivros());
+                return AplicarDesconto(CalcularValorBruto());
             }
 
             public string Relatorio()
@@ -131,13 +90,17 @@ namespace Sistema_de_Biblioteca
                 string nome = usuario.Nome;
                 string book = Livro.Titulo;
                 int dias = CalcularDiasEmprestimo();
-                double valorSemDesconto = ValorLivros();
-                double desconto = usuario.CalcularDesconto();
-                double value = CalcularValorFinal();
+                double valorSemDesconto = CalcularValorBruto();
+                double desconto = usuario.CalcularDesconto() * 100; // Em porcentagem para exibição
+                double valorFinal = CalcularValorFinal();
 
-                return ($"Usuário: {nome}\nLivro: {book}\nDias: {dias}\nDesconto (%): {desconto}\nValor sem Descontos: {valorSemDesconto}\nValor final: {value}");
+                return $"Usuário: {nome}\n" +
+                       $"Livro: {book}\n" +
+                       $"Dias: {dias}\n" +
+                       $"Desconto (%): {desconto}%\n" +
+                       $"Valor sem Desconto: R$ {valorSemDesconto:F2}\n" +
+                       $"Valor Final: R$ {valorFinal:F2}";
             }
         }
     }
 }
-
